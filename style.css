@@ -1,0 +1,99 @@
+body{
+	width:100%;
+	font-family:helvetica;
+	font-size:16px;
+	padding:0px;
+	margin:0px;
+}
+
+h2{
+	font-size: 20px;
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+
+.navbar{
+	margin-top: 0px;
+	margin-bottom: 10px;
+	margin-left: -20px;
+	margin-right: -20px;
+}
+
+.frame{
+	padding: 5px;
+	background-color: white;
+	background-clip:content-box;
+}
+
+.dropdown:hover .dropdown-menu {
+    display: block;
+    margin-top: 0;
+ }
+
+.carousel{
+	max-height: 500px;
+	margin-bottom: 20px;
+}
+
+.carousel-inner {
+    position:relative;
+    height: 100%;
+    overflow: hidden;
+}
+
+.carousel-indicators {
+    bottom: 0%;
+}
+
+.background{
+background-color: aliceblue;
+}
+
+li:hover{
+  background-color: #f1f1f1
+}
+
+.container{
+	max-width: 780px;
+}
+
+.bottom-space{
+	margin-bottom: 20px;
+}
+
+.side-padding{
+	padding-left: 5px;
+	padding-right: 5px;
+}
+
+.top-bottom-space{
+	margin-top: 20px;
+	margin-bottom: 20px;
+}
+
+.row.is-flex {
+    display: flex;
+    flex-wrap: wrap;
+}
+.row.is-flex > [class*='col-'] {
+    display: flex;
+    flex-direction: column;
+}
+
+.vertical-center{
+	flex-direction: column;
+	justify-content: center;
+}
+
+
+.footer{
+	background-color: #f1f1f1;
+}
+
+.footer.navbar{
+	margin-bottom: 0;
+}
+
+p2.col-xs-4, p2.col-xs-8{
+	padding: 15px;
+}

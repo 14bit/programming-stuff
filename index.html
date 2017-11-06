@@ -1,27 +1,108 @@
-<!--
-Eric Crawford
-Programming Basics
-School email:        crawford.er@husky.neu.edu
-Google Group email:  132435az@gmail.com
-Assignment 8.0
-Difference Filter
--->
-
 <!DOCTYPE html>
 <html>
-  <head>
 
-    <title>Difference Filter</title>
+<head>
+  <meta charset="utf-8">
 
-    <meta charset="UTF-8">
+	<title>Programming Stuff</title>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.16/p5.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.16/addons/p5.sound.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.16/addons/p5.dom.min.js"></script>
-    <script src="filter.js" type="text/javascript"></script>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="style.css">
 
-    <style> body {padding: 0; margin: 0;} canvas {vertical-align: top;} </style>
-  </head>
-  <body>
-  </body>
+</head>
+
+</body>
+
+<!-- Center all content -->
+<div class="container background">
+
+  <!-- Navigation Bar -->
+  <nav class="navbar navbar-default">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="index.html">Eric Crawford</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+  <!-- Main Content -->
+  <div class="row is-flex frame bottom-space">
+    <div class="col-xs-12 vertical-center">
+        <h1>Programming Stuff</h1>
+        <p2>This page leads to a bunch of tests, experiments, and assignments that I've coded up for various classes. Feel free to click around, though there's not much here. More things will probably be added over time.</p2>
+    </div>
+  </div>
+
+  <hr/>
+
+  <div class="row is-flex">
+
+    <!-- Featured Project -->
+    <div class="col-xs-12 col-sm-8 frame">
+      <div class="col-xs-12 is-flex">
+        <div class="row is-flex">
+          <img src="./images/difference.png" class="img-responsive col-xs-6 col-sm-8" style="padding:0px;">
+          <div class="col-xs-6 col-sm-4 vertical-center">
+            <h2><a href="difference.html">Difference Filter</a> <br><small>p5.js and p5.dom</small></h2>
+            <p1>A video effect that highlights what pixels are changing between frames. Requires a webcam to run.</p1>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Standard Project -->
+    <div class="col-xs-6 col-sm-4 frame">
+      <img src="https://tf2maps.net/attachments/2016-02-06_00016-jpg.12015/" class="img-responsive" style="padding:0px;">
+      <div class="col-xs-12 vertical-center">
+        <h2><a href="reactor.html">Reactor Webpage</a> <br><small>HTML and Bootstrap</small></h2>
+        <p1>A small test website made to brush up on my HTML skills.</p1>
+      </div>
+    </div>
+
+    <!-- Standard Project -->
+    <div class="col-xs-6 col-sm-4 frame">
+      <img src="./images/checkerboard.png" class="img-responsive" style="padding:0px;">
+      <div class="col-xs-12 vertical-center">
+        <h2><a href="checkerboard.html">Checkerboard</a> <br><small>p5.js and p5.dom</small></h2>
+        <p1>Another video filter thing, this one runs far worse.</p1>
+      </div>
+    </div>
+
+    <!-- Featured Project -->
+    <div class="col-xs-12 col-sm-8 frame">
+      <div class="col-xs-12 is-flex">
+        <div class="row is-flex">
+          <img src="./images/subway.png" class="img-responsive col-xs-6 col-sm-8" style="padding:0px;">
+          <div class="col-xs-6 col-sm-4 vertical-center">
+            <h2><a href="rails.html">Subway System Generator</a> <br><small>Processing 3 to p5.js</small></h2>
+            <p1>Tries to generate basic subway maps. Click to add stations, press space to add a station without adding new lines.</p1>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer navbar">
+      <p2 class="col-xs-8 col-sm-4 text-muted small">Designed by Eric Crawford</p2>
+      <p2 class="col-xs-4 col-xs-offset-0 col-sm-offset-4 text-muted text-right small">Made with <a href="https://getbootstrap.com/">Bootstrap</a></p2>
+  </footer>
+
+</div>
+
+</body>
+
 </html>

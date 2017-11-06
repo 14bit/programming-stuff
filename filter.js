@@ -1,12 +1,3 @@
-/*
-Eric Crawford
-Programming Basics
-School email:        crawford.er@husky.neu.edu
-Google Group email:  132435az@gmail.com
-Assignment 8.0
-Difference Filter
-*/
-
 var capture;
 var last_frame = new Array();
 var button;

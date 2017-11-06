@@ -45,6 +45,12 @@ function mouseClicked() {
 
 }
 
+function touchStarted() {
+
+  stations.push(new Station(mouseX, mouseY));
+
+}
+
 function keyPressed(){
 
   if (keyCode === 32){

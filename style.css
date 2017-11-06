@@ -1,257 +1,103 @@
 body{
-background-color: #e2e2e2;
-word-wrap:break-word;
-overflow-wrap: break-word;
+	width:100%;
+	font-family:helvetica;
+	font-size:16px;
+	padding:0px;
+	margin:0px;
 }
 
-/*These next two are used in the navigation bar to make the boxes*/
-li{
-  display: inline-block;
-  padding: 0;
-  background-color: #e2e2e2;
-  font-size: 20px;
-  font-family: 'Roboto', sans-serif;
+h2{
+	font-size: 20px;
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+
+img.align-self {
+  align-self: center;
+}
+
+.navbar{
+	margin-top: 0px;
+	margin-bottom: 10px;
+	margin-left: -20px;
+	margin-right: -20px;
+}
+
+.frame{
+	padding: 5px;
+	background-color: white;
+	background-clip:content-box;
+}
+
+.dropdown:hover .dropdown-menu {
+    display: block;
+    margin-top: 0;
+ }
+
+.carousel{
+	max-height: 500px;
+	margin-bottom: 20px;
+}
+
+.carousel-inner {
+    position:relative;
+    height: 100%;
+    overflow: hidden;
+}
+
+.carousel-indicators {
+    bottom: 0%;
+}
+
+.background{
+background-color: aliceblue;
 }
 
 li:hover{
   background-color: #f1f1f1
 }
 
-li a{
-  display: inline-block;
-  padding: 5px;
+.container{
+	max-width: 780px;
 }
 
-#Navigation{
-  list-style-type: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  padding: 10px;
-  margin: 0 auto;
-  margin-top: 0;
-  max-width: 1020px;
-  box-sizing: border-box;
-  background-color: brown;
-  z-index: 2;
+.bottom-space{
+	margin-bottom: 20px;
 }
 
-/*Posistion link box propperly*/
-.dropdown {
-    display: inline-block;
-    cursor: pointer;
+.side-padding{
+	padding-left: 5px;
+	padding-right: 5px;
 }
 
-/*Hide and position dropdown boxes*/
-.dropdown-links {
-    display: none;
-    position: absolute;
-    min-width: inherit;
-    z-index: 1;
+.top-bottom-space{
+	margin-top: 20px;
+	margin-bottom: 20px;
 }
 
-/* Style of links inside the dropdown */
-.dropdown-links a {
-  display: block;
-  padding: 5px;
-  background-color: #e2e2e2;
-  font-size: 16px;
-  font-family: 'Roboto', sans-serif;
-  border-top: 1px grey solid;
+.row.is-flex {
+    display: flex;
+    flex-wrap: wrap;
+}
+.row.is-flex > [class*='col-'] {
+    display: flex;
+    flex-direction: column;
 }
 
-/*Change background while hover*/
-.dropdown-links a:hover {
-  background-color: #f1f1f1
+.vertical-center{
+	flex-direction: column;
+	justify-content: center;
 }
 
-/* Show Dropdown */
-.dropdown:hover .dropdown-links {
-    display: block;
+
+.footer{
+	background-color: #f1f1f1;
 }
 
-/*Page headers*/
-h1{
-  font-family: 'Roboto', sans-serif;
-  margin: 0px auto 10px;
+.footer.navbar{
+	margin-bottom: 0;
 }
 
-/*Map names*/
-h2{
-  padding: 0px;
-  margin: 0px 0px 8px;
-  font-size: 30px;
-  font-family: 'Roboto', sans-serif;
-}
-
-/*Gamemode Tags*/
-h3{
-  font-size: 16px;
-  margin: 0px;
-  font-family: 'Roboto', sans-serif;
-}
-
-/*Standard Text*/
-p1{
-    font-family: 'Open Sans', sans-serif;
-}
-
-p2{
-    font-family: 'Open Sans', sans-serif;
-    font-size: 18px;
-}
-
-/*Horizontal Dividers*/
-hr{
-  margin: auto 20px;
-}
-
-/*Standard Links*/
-a{
-  text-decoration: none;
-  color: dodgerblue;
-}
-
-a:hover, a:visited:hover{
-  color: red;
-}
-
-a:visited{
-  color: firebrick;
-}
-
-.current{
-  color: black;
-  font-weight: bold;
-  padding: 5px;
-}
-
-/*Centers/wraps all content into center of screen for large displays*/
-.center_column{
-  padding: 10px;
-  margin: 0 auto;
-  max-width: 1000px;
-  box-sizing: border-box;
-  background-color: white;
-}
-
-.top_fix{
-  margin-top: 50px;
-}
-
-/*Automatically distrubutes everything inside to be evenly horizontally spaced*/
-.multi{
-  display: flex;
-  flex-flow: row wrap;
-  flex-basis: min-width;
-  justify-content: space-around;
-}
-
-/*Boxes for content, can be used inside a .multi, or contain a .multi*/
-.box{
-  text-align: left;
-  flex: 1 0 250px;
-  max-width: 450px;
-  height: auto;
-  min-width: 150px;
-  margin: 10px;
-  /*padding: 5px;*/
-  display: inline-block;
-}
-
-.wide{
-  max-width: 100%;
-  flex: none;
-}
-
-.blue{
-    background-color: aliceblue;
-}
-
-/*Full width content box, for use inside of .multi*/
-.featured{
-  max-width: none;
-  background-color: white;
-}
-
-/*A container for grouping multiple elements into
-a single box that plays nice with .multi
-Automatically centers content vertically if
-something is forcing the wrapper to be taller than
-the content inside it!*/
-.wrapper{
-  margin: 0px 10px;
-  flex: 1 0 200px;
-  max-width: 600px;
-  height: auto;
-  min-width: 150px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-/*Makes images on the right of text move above the text when wrapping*/
-.backwards{
-  flex-flow:row wrap-reverse;
-}
-
-/*The following are used to make the fancy scoll-locked images
-on some of the pages. There's probably a better way to do this,
-but I'm still learning.*/
-.fancy {
-  min-height: 300px;
-  max-width: 1000px;
-  background-attachment: fixed;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: 1000px;
-  margin: 0 auto;
-}
-
-.bottom{
-  margin: 10px;
-  position: absolute;
-  bottom: 315px;
-  z-index: 0;
-  font-weight: bold;
-  color: aliceblue;
-}
-
-#reactorpic1{
-  background-image: url("./images/reactor.jpg");
-  background-position: 50% 10%;
-}
-
-#iceboxpic{
-  background-image: url("./images/icebox.jpg");
-  background-position: 50% 10%;
-  height: 400px;
-}
-
-#holcanpic{
-  background-image: url("./images/holcan.jpg");
-  background-position: 50% -50px;
-  height: 400px;
-}
-
-#reactorpic2{
-  background-image: url("./images/reactor.jpg");
-  background-position: 50% -50px;
-  height: 400px;
-}
-
-#fracturepic{
-  background-image: url("./images/fracture.jpg");
-  background-position: 50% -50px;
-  height: 400px;
-}
-
-/*This fixes the iframes in the pages so that they wrap with the rest
-of the content properly. They're tricky to work with.*/
-iframe{
-  max-width: 600px;
-  min-height: 250px;
-  flex:1 0 250px;
-  margin: 10px;
+p2.col-xs-4, p2.col-xs-8{
+	padding: 15px;
 }

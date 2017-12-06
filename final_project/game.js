@@ -1,4 +1,23 @@
+/*
+Eric Crawford
+Programming Basics
+School email:        crawford.er@husky.neu.edu
+Google Group email:  132435az@gmail.com
+Final Project
+Action Command RPG
+*/
 
+//p5.js and documentation from:
+//https://p5js.org/reference/
+
+//p5.play and documentation from:
+//http://p5play.molleindustria.org/docs/index.html
+
+//I referenced the TF2 item schema while designing my json files, obtained from:
+//http://api.steampowered.com/IEconItems_440/GetSchema/v0001/?key=6A50B013B18080A4F31DBCDCD19995C4.
+
+//Method for wrapping functions to be called later adapted from:
+//https://stackoverflow.com/a/899133
 
 //Algorithm for randomly selecting weighted entries in a list adapted from:
 //https://softwareengineering.stackexchange.com/questions/150616/return-random-list-item-by-its-weight
@@ -14,6 +33,7 @@ var battle_end = false;
 var world_paused = false;
 var current_encounter;
 var attacking_enemy;
+var target_index;
 
 var SCENE_W = 2000;
 var SCENE_H = 800;
@@ -24,8 +44,13 @@ var SCENE_H = 800;
 function preload() {
 
   button_img = loadImage("./game_assets/button.png");
+  sword_img = loadImage("./game_assets/sword.png");
+  bow_img = loadImage("./game_assets/bow.png");
+  recover_img = loadImage("./game_assets/recover.png");
+  run_img = loadImage("./game_assets/run.png");
   arrow_img = loadImage("./game_assets/arrow.png");
   data = loadJSON("enemies.json");
+
   player_idle = loadAnimation("./game_assets/knight_idle_1.png", "./game_assets/knight_idle_6.png");
   player_idle_flipped = loadAnimation("./game_assets/knight_idle_flipped_0.png", "./game_assets/knight_idle_flipped_5.png");
   player_idle.frameDelay = 12;
@@ -34,12 +59,24 @@ function preload() {
   player_run = loadAnimation("./game_assets/knight_run_0.png", "./game_assets/knight_run_9.png");
   player_run.frameDelay = 6;
 
-  battle_top = loadImage("./game_assets/battle_top.png");
-  battle_bottom = loadImage("./game_assets/battle_bottom.png");
-
   player_run_flipped = loadAnimation("./game_assets/knight_run_flipped_0.png", "./game_assets/knight_run_flipped_9.png");
   player_run_flipped.frameDelay = 6;
 
+  player_strike = loadAnimation("./game_assets/knight_swing0.png", "./game_assets/knight_swing7.png");
+  player_strike.playing = false;
+
+  player_shoot = loadAnimation("./game_assets/knight_bow_0.png", "./game_assets/knight_bow_2.png")
+  player_shoot_done = loadImage("./game_assets/knight_bow_3.png")
+  player_shoot.frameDelay = 12;
+
+  enemy_idle = loadAnimation("./game_assets/enemy_idle0.png", "./game_assets/enemy_idle5.png");
+  enemy_idle.frameDelay = 12;
+
+  enemy_strike = loadAnimation("./game_assets/enemy_swing_0.png", "./game_assets/enemy_swing_6.png");
+  enemy_strike.frameDelay = 12;
+
+  battle_top = loadImage("./game_assets/battle_top.png");
+  battle_bottom = loadImage("./game_assets/battle_bottom.png");
 
 }
 
@@ -93,12 +130,15 @@ function setup() {
   battle_buttons.push(new battle_button(0, height+this.height, "Recover"));
   battle_buttons.push(new battle_button(0, height+this.height, "Run!"));
 
+  // TODO: Make a test level and add simple encounters and a layout
+
   //Set up encounters
   // TODO: This is debug code, make this happen dynamically when loading rooms, instead of in setup
   enemy_encounters = new Array();
   enemy_encounters.push(new Encounter(1, SCENE_W/2 + 600, SCENE_H/2 + 200));
   enemy_encounters.push(new Encounter(0, SCENE_W/2 - 200, SCENE_H/2 - 400));
-  enemy_encounters.push(new Encounter(2, SCENE_W/2 - 600, SCENE_H/2 + 400));
+  enemy_encounters.push(new Encounter(3, SCENE_W/2 + 800, SCENE_H/2 + 400));
+  enemy_encounters.push(new Encounter(4, SCENE_W/2 - 600, SCENE_H/2 + 400));
 
   //Resize/position buttons based on the number that exist
   for(var i = 0; i<battle_buttons.length; i++) {
@@ -129,6 +169,8 @@ function setup() {
 
 function draw() {
 
+  target_index = constrain(player_moves.length, 0, enemy_array.length-1);
+
   background(255);
 
   //Enable the camera to draw everything other than the HUD
@@ -155,12 +197,14 @@ function draw() {
     bg.draw();
     coll.draw();
 
-  }
+    //Draw encounters
+    for (var i = 0; i < enemy_encounters.length; i++) {
+      enemy_encounters[i].display();
+      if(world_paused == false){
+        enemy_encounters[i].move();
+      }
+    }
 
-  //Draw encounters
-  for (var i = 0; i < enemy_encounters.length; i++) {
-    enemy_encounters[i].display();
-    enemy_encounters[i].move();
   }
 
   //Draw battle backgrounds
@@ -221,17 +265,17 @@ function draw() {
 
   //Debug text/instructions
   fill(0);
-  textSize(12);
+  textSize(24);
   textAlign(LEFT);
-  text("WASD to move while outside of battle", 20, 60);
-  text("Press q to remove moves from the queue, and e to perform queued up moves when the queue is full", 20, 80);
+  //text("WASD to move while outside of battle", 20, 60);
+  //text("Press q to remove moves from the queue, and e to perform queued up moves when the queue is full", 20, 80);
 
-  text("Moves queue:", 20, 100);
+  text("Next Moves:", 20, 60);
   if (player_moves_readable[0] != null){
-    text(player_moves_readable[0], 20, 120);
+    text(player_moves_readable[0], 20, 85);
   }
   if (player_moves_readable[1] != null){
-    text(player_moves_readable[1], 20, 140);
+    text(player_moves_readable[1], 20, 110);
   }
 
   //Health bar
@@ -252,7 +296,9 @@ class Player{
     this.spr.addAnimation("idle_flipped", player_idle_flipped);
     this.spr.addAnimation("run", player_run);
     this.spr.addAnimation("run_flipped", player_run_flipped);
-
+    this.spr.addAnimation("attack_sword", player_strike);
+    this.spr.addAnimation("attack_bow", player_shoot);
+    this.spr.addAnimation("attack_bow_finished", player_shoot_done);
 
     this.spr.scale = 0.3;
 
@@ -270,7 +316,23 @@ class Player{
     this.can_attack = true;
     this.in_progress = false;
 
+    //For blocking/dodging
+    this.blocking = false;
+    this.can_block = true;
+
+    //Stuff for the sword attack
+    this.sword_counter = 0;
+    this.swordID;
+
+    //Stuff for the Run move
+    this.run_meter = 0;
+    this.run_visible = false;
+    this.meter_drop;
+
     this.spr.world_position = createVector(this.spr.position.x, this.spr.position.y);
+
+    this.battle_home = createVector(SCENE_W/2, SCENE_H/2);
+    this.battle_position = this.battle_home;
 
   }
 
@@ -282,6 +344,14 @@ class Player{
     ellipse(this.spr.position.x, this.spr.position.y + 45, 70, 20);
 
     drawSprite(this.spr);
+
+    if(this.blocking == true){
+
+      textSize(24);
+      fill(0);
+      text("Blocking!", this.spr.position.x - 50, this.spr.position.y - 75);
+
+    }
 
   }
 
@@ -354,6 +424,8 @@ class Player{
   //Moves player to center and sets up battle
   battle_prep(){
 
+    world_paused = true;
+
     if(battle_start == true){
       this.spr.changeAnimation("idle");
       this.flipped = false;
@@ -364,7 +436,7 @@ class Player{
 
     //text("Battle Prep!", 100, 140);
 
-    if((this.spr.position.y - (SCENE_H/2)) <= 0.15 && (this.spr.position.y - (SCENE_H/2)) >= -0.15){
+    if((this.spr.position.y - (SCENE_H/2)) <= 0.15 && (this.spr.position.y - (SCENE_H/2)) >= -0.15 && (this.spr.position.x - (SCENE_W/2)) <= 0.15 && (this.spr.position.x - (SCENE_W/2) >= -0.15)){
 
       back_top.position.y = (SCENE_H/2) - 75;
       back_bottom.position.y = (SCENE_H/2) - 75;
@@ -380,6 +452,8 @@ class Player{
       for (var i = 0; i < enemy_array.length; i++) {
         enemy_array[i].spr.position.set(enemy_array[i].spr.home_position);
       }
+
+      this.run_meter = 0;
 
       //Start the battle once setup is done!
       battle_setup = false;
@@ -419,6 +493,8 @@ class Player{
 
   //Moves player back to position and ends battle
   battle_exit(){
+
+    player_moves = [];
 
     //text("Battle Exit!", 100, 140);
 
@@ -479,14 +555,34 @@ class Player{
 
   battle_active(){
 
+    this.run_meter = constrain(this.run_meter, 0, 100);
+
     if(battle_mode == true){
 
-      //Lerp to desired zoom at all times for fancy cinematics
+      //Lerp camera to desired zoom at all times for fancy cinematics
       var scl_lerp = lerp(camera.zoom, camera.battle_zoom, 0.1);
       camera.zoom = scl_lerp;
 
-      //Lerp to desired position at all times for fancy cinematics
+      //Lerp camera to desired position at all times for fancy cinematics
       camera.position.lerp(camera.battle_position, 0.1);
+
+      this.spr.position.lerp(this.battle_position, 0.1);
+
+    }
+
+    if(this.run_visible == true){
+
+      fill(0);
+      textSize(24);
+      text("Tap E!", this.spr.position.x - 25, this.spr.position.y - 125);
+
+      fill(200, 200, 200);
+      stroke(0);
+      rect(this.spr.position.x - 40,this.spr.position.y + 70, 80, 10);
+      noStroke();
+      fill(255, 0, 0);
+      rect(this.spr.position.x - 38,this.spr.position.y + 72, 77*(this.run_meter/100),7);
+
 
     }
 
@@ -508,7 +604,7 @@ class Player{
       selector.heightchange = (Math.sin(millis()/100)*3);
       var posx_lerp = lerp(selector.position.x, enemy_array[target_index].spr.position.x, 0.1);
       selector.position.x = posx_lerp;
-      var posy_lerp = lerp(selector.position.y, enemy_array[target_index].spr.position.y - 75 - selector.heightchange, 0.1);
+      var posy_lerp = lerp(selector.position.y, enemy_array[target_index].spr.position.y - 125 - selector.heightchange, 0.1);
       selector.position.y = posy_lerp;
 
       drawSprite(selector);
@@ -520,11 +616,25 @@ class Player{
         enemy_encounters[current_encounter].spr.remove();
         enemy_encounters.splice(current_encounter, 1);
 
-        battle_end = true;
         battle_mode = false;
-        txt_color = 255;
+
+        this.spr.changeAnimation("idle");
+        setTimeout("battle_end = true;txt_color = 255;", 1000);
 
       }
+
+    }
+
+    //Run if the meter is full
+    if(this.run_meter >= 100){
+
+      this.spr.changeAnimation("idle");
+
+      this.run_meter = 0;
+      this.run_visible = false;
+      txt_color = 255;
+      battle_end = true;
+      battle_mode = false;
 
     }
 
@@ -534,47 +644,134 @@ class Player{
   //a more generalized function and have other functions do the calculations
   modify_health(value, _mode){
 
+    if(this.blocking == true){
+
+      this.health_change = ceil(value/2);
+
+    } else {
+
+      this.health_change = value;
+
+    }
+
     switch (_mode) {
 
       //Adds VALUE to CURRENT health, negatives REMOVE health
       case 'add':
-        this.current_health += value;
-        indicators.push(new Indicator(value, this.spr.position.x, this.spr.position.y - 100));
+        this.current_health += this.health_change;
+        indicators.push(new Indicator(this.health_change, this.spr.position.x, this.spr.position.y - 100));
         break;
       //Removes health
       case 'remove':
         this.current_health -= value;
-        indicators.push(new Indicator(-value, this.spr.position.x, this.spr.position.y - 100));
+        indicators.push(new Indicator(-this.health_change, this.spr.position.x, this.spr.position.y - 100));
         break;
       //Divides CURRENT health by VALUE
       case 'divide':
         if (value != 0 && this.current_health != 0){
-          indicators.push(new Indicator(ceil(this.current_health/value) - this.current_health, this.spr.position.x, this.spr.position.y - 100));
-          this.current_health = ceil(this.current_health/value);
+          indicators.push(new Indicator(ceil(this.current_health/this.health_change) - this.current_health, this.spr.position.x, this.spr.position.y - 100));
+          this.current_health = ceil(this.current_health/this.health_change);
         }
         break;
       //Adds a percent of MAX health
       case 'add_percent':
         if (value != 0){
-          this.current_health += ceil(map(value, 0, 100, 0, this.max_health));
-          indicators.push(new Indicator(ceil(map(value, 0, 100, 0, this.max_health)), this.spr.position.x, this.spr.position.y - 100));
+          this.current_health += ceil(map(this.health_change, 0, 100, 0, this.max_health));
+          indicators.push(new Indicator(ceil(map(this.health_change, 0, 100, 0, this.max_health)), this.spr.position.x, this.spr.position.y - 100));
         }
         break;
       //Removes percent of CURRENT health
       case 'remove_percent':
         if (value != 0){
-          var health_removed = -(ceil(map(value, 0, 100, 0, this.current_health)));
-          this.current_health -= ceil(map(value, 0, 100, 0, this.current_health));
+          var health_removed = -(ceil(map(this.health_change, 0, 100, 0, this.current_health)));
+          this.current_health -= ceil(map(this.health_change, 0, 100, 0, this.current_health));
           indicators.push(new Indicator(health_removed, this.spr.position.x, this.spr.position.y - 100));
         }
         break;
       //If no mode is specified, just simulate ADD
       default:
-        this.current_health += value;
-        indicators.push(new Indicator(value, this.spr.position.x, this.spr.position.y - 100));
+        this.current_health += this.health_change;
+        indicators.push(new Indicator(this.health_change, this.spr.position.x, this.spr.position.y - 100));
         break;
 
     }
+
+  }
+
+  sword(target){
+
+    if(this.sword_counter == 0){
+
+      this.sword_target = target;
+
+      setTimeout("player.sword_counter = 1;",1000);
+      //print(createVector(enemy_array[target_index].spr.position.x - 100, enemy_array[target_index].spr.position.y));
+      setTimeout("player.battle_position = createVector(player.sword_target.spr.home_position.x - 75, player.sword_target.spr.home_position.y);",100);
+      setTimeout("camera.battle_position = createVector(player.sword_target.spr.home_position.x, player.sword_target.spr.home_position.y - 50);camera.battle_zoom = 1.2;", 100);
+
+      setTimeout("player.spr.changeAnimation('attack_sword');", 1000);
+      setTimeout("player.spr.animation.changeFrame(0);", 1000);
+      this.swordID1 = setTimeout("player.spr.animation.nextFrame();camera.battle_zoom = 1.3;", 1200);
+      this.swordID2 = setTimeout("player.spr.animation.nextFrame();camera.battle_zoom = 1.4;", 1400);
+      this.swordID3 = setTimeout("player.spr.animation.nextFrame();camera.battle_zoom = 1.5;", 1600);
+      this.swordID4 = setTimeout("player.spr.animation.nextFrame();camera.battle_zoom = 1.6;", 1800);
+      this.swordID5 = setTimeout("player.spr.animation.nextFrame();player.sword_counter = 2;camera.battle_position = player.battle_position;", 2000);
+      this.swordID6 = setTimeout("camera.battle_position = camera.position.home;camera.battle_zoom = 1;player.battle_position = player.battle_home; player.sword_counter = 0;player.flipped = true; player.spr.changeAnimation('run_flipped');", 3000);
+      this.swordID7 = setTimeout("player.flipped = false; player.spr.changeAnimation('idle');", 3500);
+      this.swordID8 = setTimeout(runMoves, 3500);
+
+    }
+
+    if(this.sword_counter == 1){
+      this.sword_counter = 2;
+      setTimeout("player.spr.animation.changeFrame(6);camera.battle_zoom = 1.2;", 100);
+      setTimeout("player.spr.animation.changeFrame(7);", 200);
+
+      //print(player.spr.animation.getFrame());
+      var frame = player.spr.animation.getFrame();
+
+      switch (frame) {
+        case 0:
+          this.sword_target.damage(0);
+        break;
+        case 1:
+          this.sword_target.damage(1);
+        break;
+        case 2:
+          this.sword_target.damage(2);
+        break;
+        case 3:
+          this.sword_target.damage(3);
+        break;
+        case 4:
+          this.sword_target.damage(4);
+        break;
+      }
+
+      setTimeout("camera.battle_position = camera.position.home;camera.battle_zoom = 1;player.flipped = true;player.spr.changeAnimation('run_flipped');", 1000);
+      setTimeout("player.battle_position = player.battle_home;", 1000);
+      setTimeout("player.sword_counter = 0;", 1000);
+      //setTimeout("player.spr.changeAnimation('idle');", 1000);
+
+      setTimeout("player.flipped = false; player.spr.changeAnimation('idle');", 1500);
+      setTimeout(runMoves, 1500);
+
+    }
+
+  }
+
+  bow(){
+
+    setTimeout("camera.battle_zoom = 1.1;", 100);
+
+    setTimeout("player.spr.changeAnimation('attack_bow');", 100);
+
+    setTimeout("for (var i = 0; i < enemy_array.length; i++) {enemy_array[i].damage(2);}",800);
+    setTimeout("player.spr.changeAnimation('attack_bow_finished');", 800);
+
+    setTimeout("player.spr.changeAnimation('idle');", 1500);
+    setTimeout("camera.battle_zoom = 1;", 1500);
+    setTimeout(runMoves, 2000);
 
   }
 
@@ -588,6 +785,20 @@ class Player{
     setTimeout(runMoves, 3000);
 
   }
+
+  run(){
+
+    this.run_visible = true;
+    setTimeout("camera.battle_position = createVector(player.battle_home.x, player.battle_home.y - 50);camera.battle_zoom = 1.5;player.flipped = true;player.spr.changeAnimation('run_flipped');", 100);
+
+    player.meter_drop = setInterval("player.run_meter--",50);
+    setTimeout("camera.battle_position = camera.position.home;camera.battle_zoom = 1;player.run_visible = false;player.flipped = false; player.spr.changeAnimation('idle');clearInterval(player.meter_drop);", 2000);
+
+    setTimeout(runMoves, 2500);
+
+
+  }
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -604,7 +815,7 @@ class Encounter{
     //so they don't get stuck on corners. p5.play will visually move the circle
     //collider when offset in debug, but will not actually offset the calculations.
     this.spr.setCollider("rectangle", 0, 25, 50, 50);
-    this.spr.debug = true;
+    //this.spr.debug = true;
 
     encount_spr.add(this.spr);
 
@@ -614,7 +825,6 @@ class Encounter{
 
     this.spr.world_position = createVector(this.spr.position.x, this.spr.position.y);
 
-    //var self = this;
     this.wanderID = setInterval(this.flip.bind(this), random(1500, 2500));
     this.wandering = false;
 
@@ -633,8 +843,8 @@ class Encounter{
       //Debug radius and text
       fill(0,0);
       stroke(0);
-      ellipse(this.spr.position.x, this.spr.position.y, 600,600);
-      text(encounters[this.encounter_number].name, this.spr.position.x, this.spr.position.y);
+      //ellipse(this.spr.position.x, this.spr.position.y, 600,600);
+      //text(encounters[this.encounter_number].name, this.spr.position.x, this.spr.position.y);
     }
 
     //If player can be attacked, collide and start battle
@@ -647,13 +857,13 @@ class Encounter{
 
   move(){
 
-    if(dist(this.spr.position.x, this.spr.position.y, player.spr.position.x, player.spr.position.y) <= 300 && world_paused == false && player.can_be_attacked == true){
+    this.spr.limitSpeed(6);
+    this.spr.friction = 0.2;
+
+    if(dist(this.spr.position.x, this.spr.position.y, player.spr.position.x, player.spr.position.y) <= 400 && world_paused == false && player.can_be_attacked == true){
 
       this.wandering = false;
       this.spr.attractionPoint(3, player.spr.position.x, player.spr.position.y);
-
-      this.spr.limitSpeed(8);
-      this.spr.friction = 0.2;
 
     } else {
 
@@ -725,14 +935,22 @@ class Enemy{
 
     //Create sprite and collisions
     this.spr = createSprite(SCENE_W + width, (SCENE_H/2), 50, 100);
+    this.spr.addAnimation("idle", enemy_idle);
+    this.spr.addAnimation("attack_sword", enemy_strike);
+
+    this.spr.scale = 0.3;
+
     this.spr.setCollider("rectangle", 0, 25, 50, 50);
     //this.spr.debug = true;
 
     this.current_health = this.stats.health;
 
-    this.spr.home_position = createVector(x, y);
+    this.defence = this.stats.start_armor;
 
-    this.spr.debug = true;
+    this.spr.home_position = createVector(x, y);
+    this.spr.battle_position = this.spr.home_position;
+
+    //this.spr.debug = true;
 
     this.spr.mouseActive = true;
     //Due to a bug in p5.play, I cannot check if the mouse is over the enemy
@@ -754,6 +972,18 @@ class Enemy{
 
   display(){
 
+    //blocking
+    if(this.defence != 0){
+
+      textSize(24);
+      fill(0);
+      text("Blocking!", this.spr.position.x - 50, this.spr.position.y - 75);
+
+    }
+
+    //Move to battle positions
+    this.spr.position.lerp(this.spr.battle_position, 0.1);
+
     //Remove this enemy if it dies
     if (this.current_health <= 0){
       this.spr.remove();
@@ -763,6 +993,7 @@ class Enemy{
 
     //Show name and health, possibly debug
     fill(0);
+    textSize(12);
     text(this.stats.name, this.spr.position.x - 40, this.spr.position.y + 65);
     text(this.current_health + "/" + this.stats.health, this.spr.position.x - 40, this.spr.position.y + 95);
 
@@ -805,34 +1036,88 @@ class Enemy{
 
   attack(){
 
+    this.defence = 0;
+
     //Get the move we are about to use
     this.move = this.getMove();
 
     //If it is an attack, do the attack
-    // TODO: Make the move animations and add the ability to block moves
     if(this.move.type == "attack"){
 
-      player.modify_health(this.move.power, this.move.method);
+      //player.modify_health(this.move.power, this.move.method);
+      this.sword(this.move);
 
     }
 
-    //If there is another enemy in the battle after this, run its attack function
-    if(enemy_array[attacking_enemy + 1] != null){
+    if(this.move.type == "defend"){
 
-      attacking_enemy++;
-      setTimeout("enemy_array[attacking_enemy].attack();", 500);
+      this.defence = this.move.power;
+
+      //If there is another enemy in the battle after this, run its attack function
+      if(enemy_array[attacking_enemy + 1] != null){
+
+        attacking_enemy++;
+        setTimeout("enemy_array[attacking_enemy].attack();", 500);
 
 
-    } else {
+      } else {
 
-      setTimeout("player_turn = true;", 500);
+        setTimeout("player_turn = true;", 500);
+
+      }
 
     }
 
   }
 
-  // TODO: Replace this with a more generalized function, and pass in all of the
-  //damages from the attack functions
+
+  sword(move){
+
+      this.power = move.power;
+      this.method = move.method;
+
+      //print(createVector(enemy_array[target_index].spr.position.x - 100, enemy_array[target_index].spr.position.y));
+      setTimeout("enemy_array[attacking_enemy].spr.battle_position = createVector(player.spr.position.x + 75, player.spr.position.y);",100);
+      setTimeout("camera.battle_position = createVector(player.spr.position.x, player.spr.position.y - 50);camera.battle_zoom = 1.2;", 100);
+
+      //player.modify_health(this.move.power, this.move.method);
+
+      setTimeout("enemy_array[attacking_enemy].spr.changeAnimation('attack_sword');", 1000);
+      setTimeout("enemy_array[attacking_enemy].spr.changeFrame(0);", 1000);
+      setTimeout("enemy_array[attacking_enemy].spr.animation.play();", 1000);
+
+      setTimeout("player.modify_health(enemy_array[attacking_enemy].power, enemy_array[attacking_enemy].method);", 2200);
+      setTimeout("enemy_array[attacking_enemy].spr.animation.stop();", 2200);
+
+      setTimeout("camera.battle_position = camera.position.home;camera.battle_zoom = 1;", 2500);
+      setTimeout("enemy_array[attacking_enemy].spr.battle_position = enemy_array[attacking_enemy].spr.home_position;enemy_array[attacking_enemy].spr.changeAnimation('idle');",2500);
+
+      //If there is another enemy in the battle after this, run its attack function
+      if(enemy_array[attacking_enemy + 1] != null){
+
+        setTimeout("attacking_enemy++;", 2999);
+        setTimeout("enemy_array[attacking_enemy].attack();", 3000);
+
+
+      } else {
+
+        setTimeout("player_turn = true;", 3000);
+
+      }
+
+  }
+
+  damage(value){
+
+    this.calculated = value - this.defence;
+
+    this.calculated = constrain(this.calculated, 0, 100);
+
+    this.current_health -= this.calculated;
+    indicators.push(new Indicator(this.calculated, this.spr.position.x, this.spr.position.y - 75, true));
+
+  }
+
   modify_health(value, _mode){
 
     switch (_mode) {
@@ -872,14 +1157,6 @@ class Enemy{
 
     }
 
-    // TODO: Move this to the end of any attack function(s) once it is written,
-    //it automatically calls the next move if there is any left in the queue
-    if(enemy_array.length > 0){
-
-      setTimeout(runMoves, 500);
-
-    }
-
   }
 
 }
@@ -888,7 +1165,7 @@ class Enemy{
 
 class Indicator{
 
-  constructor(value, x, y){
+  constructor(value, x, y, invert){
 
     //Create sprite and collisions
     this.spr = createSprite(x, y, 25, 25);
@@ -899,16 +1176,28 @@ class Indicator{
     //this.ypos = y;
     this.value = value;
     this.life = 25;
+    this.invert = invert;
 
   }
 
   display(){
 
-    if(this.value >= 1){
-      fill(0, 200, 0);
-    } else if (this.value <= -1){
-      fill(200, 0, 0);
+    if(this.invert == true){
+      if(this.value >= 1){
+        fill(200, 0, 0);
+      } else if (this.value <= -1){
+        fill(0, 200, 0);
+      }
+    } else {
+
+      if(this.value >= 1){
+        fill(0, 200, 0);
+      } else if (this.value <= -1){
+        fill(200, 0, 0);
+      }
+
     }
+
     textSize(30);
     textAlign(CENTER);
     stroke(0);
@@ -933,10 +1222,29 @@ class battle_button{
 
     //Create sprite and collisions
     this.spr = createSprite(width/5, height+this.height);
-    this.spr.addAnimation("test", button_img);
 
     this.name = name;
 
+    //Assign sprites to buttons
+    switch (name) {
+      case 'Sword':
+        this.spr.addAnimation("sword", sword_img);
+        break;
+      case 'Bow':
+        this.spr.addAnimation("bow", bow_img);
+        break;
+      case 'Recover':
+        this.spr.addAnimation("recover", recover_img);
+        break;
+      case 'Run!':
+        this.spr.addAnimation("run", run_img);
+        break;
+      default:
+        this.spr.addAnimation("test", button_img);
+        break;
+      }
+
+    //Set up the functions on each button
     this.spr.mouseActive = true;
     this.spr.onMousePressed = function() {
 
@@ -948,17 +1256,18 @@ class battle_button{
           case 'Sword':
             print("Sword");
             player_moves_readable.push("Sword");
-            player_moves.push(wrapFunction(enemy_array[target_index].modify_health, enemy_array[target_index], [-2]));
+            player_moves.push(wrapFunction(player.sword, player, [enemy_array[target_index]]));
             break;
           case 'Bow':
             print("Bow");
             player_moves_readable.push("Bow");
-            player_moves.push(wrapFunction(enemy_array[target_index].modify_health, enemy_array[target_index], [50, "remove_percent"]));
+            player_moves.push(wrapFunction(player.bow, player));
+            //player_moves.push(wrapFunction(enemy_array[target_index].modify_health, enemy_array[target_index], [50, "remove_percent"]));
             break;
           case 'Special':
             print("Special");
-            player_moves_readable.push("Special");
-            player_moves.push(wrapFunction(player.modify_health, player, [50, "remove_percent"]));
+            // player_moves_readable.push("Special");
+            // player_moves.push(wrapFunction(player.modify_health, player, [50, "remove_percent"]));
             break;
           case 'Recover':
             print("Recover");
@@ -967,14 +1276,17 @@ class battle_button{
             break;
           case 'Run!':
             print("Run");
-            if(battle_mode == true){
-              txt_color = 255;
-              battle_end = true;
-              battle_mode = false;
-            }
+
+            player_moves.push(wrapFunction(player.run, player));
+
+            // if(battle_mode == true){
+            //   txt_color = 255;
+            //   battle_end = true;
+            //   battle_mode = false;
+            // }
             break;
           default:
-            warn("Something's wrong! The button " + name + " doesn't have any case assigned to it!");
+            print("Something's wrong! The button " + name + " doesn't have any case assigned to it!");
             break;
         }
       }
@@ -982,11 +1294,6 @@ class battle_button{
   }
 
   display(){
-
-    fill(0);
-    textSize(12);
-    textAlign(CENTER);
-    text(this.name, this.spr.position.x, this.spr.position.y - 60);
 
     if(battle_mode == true){
 
@@ -1044,7 +1351,14 @@ function playerHealth(){
 
   if(player.current_health == 0){
 
-    // TODO: Kill the player
+    // TODO: Game over screen
+    player.spr.remove();
+    world_paused = true;
+    battle_end = true;
+    battle_mode = false;
+    textSize(64);
+    textAlign(CENTER);
+    text("Game Over!", width/2, height/2);
 
   }
 
@@ -1054,17 +1368,6 @@ function playerHealth(){
 
 //Confirm and delete queue in battle, debug code for switching battle_mode and player_turn
 function keyPressed(){
-
-  //Debug code for escaping battle
-  // if (keyCode === 32){
-  //
-  //   if(battle_mode == true){
-  //     battle_end = true;
-  //     battle_mode = false;
-  //
-  //   }
-  //
-  // }
 
   //Bind the number keys to the battle buttons that exist
   if(keyCode >= 49 && keyCode <= 57){
@@ -1078,13 +1381,47 @@ function keyPressed(){
   }
 
   //Press E to run queued moves
-  if (keyCode === 69 && player.can_attack == false){
+  if (keyCode === 69 && player.can_attack == false && player.in_progress == false && player_turn == true){
 
-    print(player_moves);
+    //print(player_moves);
 
     player.in_progress = true;
 
     runMoves();
+
+  }
+
+  if(keyCode === 69 && player.run_visible == true){
+
+    player.run_meter += 10;
+
+  }
+
+  //Sword Timing Code
+  if(keyCode === 69 && player.sword_counter == 1 && player.in_progress == true){
+
+    clearTimeout(player.swordID1);
+    clearTimeout(player.swordID2);
+    clearTimeout(player.swordID3);
+    clearTimeout(player.swordID4);
+    clearTimeout(player.swordID5);
+    clearTimeout(player.swordID6);
+    clearTimeout(player.swordID7);
+    clearTimeout(player.swordID8);
+
+    player.sword();
+
+  }
+
+  //Blocking code
+  if(keyCode === 69 && player_turn == false && battle_mode == true && player.can_block == true){
+
+    setTimeout("player.spr.animation.changeFrame(0);player.spr.animation.stop();", 0);
+    player.blocking = true;
+    player.can_block = false;
+    setTimeout("player.blocking = false;", 500);
+    setTimeout("player.can_block = true;", 1000);
+    setTimeout("player.spr.animation.play();camera.battle_zoom = 1;", 1000);
 
   }
 
@@ -1096,18 +1433,11 @@ function keyPressed(){
       player_moves.pop();
       player_moves_readable.pop();
 
-      print(player_moves);
+      //print(player_moves);
 
     }
 
   }
-
-  //Debug code for switching player_turn
-  // if (keyCode === 16){
-  //
-  //   player_turn = !player_turn;
-  //
-  // }
 
 }
 
@@ -1130,14 +1460,14 @@ function runMoves(){
     (player_moves.shift())();
     player_moves_readable.shift();
 
-    print(player_moves);
+    //print(player_moves);
     attacking_enemy = 0;
 
   } else if (enemy_array.length > 0) {
 
     player_turn = false;
     enemy_array[attacking_enemy].attack();
-    print(enemy_array[attacking_enemy].stats.name);
+    //print(enemy_array[attacking_enemy].stats.name);
     player.can_attack = true;
     player.in_progress = false;
 

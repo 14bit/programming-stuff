@@ -4,13 +4,14 @@
 			"name": "Knight",
 			"description": "A basic enemy with decent health and basic attacks.",
 			"sprite": "specify a sprite to use here I guess",
-			"health": "5",
+			"health": "6",
+			"start_armor": "0",
 			"type": "Normal",
 			"moves": [
 				{
 					"name": "Charge",
 					"description": "Runs at you and swipes with a sword.",
-					"weight": 2,
+					"weight": 3,
 					"type": "attack",
 					"power": "2",
 					"method": "remove",
@@ -30,7 +31,7 @@
 				{
 					"name": "Block",
 					"description": "Takes less damage next turn.",
-					"weight": 1,
+					"weight": 2,
 					"type": "defend",
 					"power": "2",
 					"method": "remove",
@@ -40,10 +41,11 @@
 			]
 		},
 		{
-			"name": "Rouge",
+			"name": "Rogue",
 			"description": "Attacks quickly, but with low damage.",
 			"sprite": "specify a sprite to use here I guess",
-			"health": "3",
+			"health": "4",
+			"start_armor": "1",
 			"type": "Poison",
 			"moves": [
 				{
@@ -57,11 +59,11 @@
 					"chance_of_special": "0"
 				},
 				{
-					"name": "Sting",
-					"description": "Unblockable poison arrow.",
+					"name": "Block",
+					"description": "Light defence.",
 					"weight": 1,
-					"type": "effect",
-					"power": "0",
+					"type": "defend",
+					"power": "1",
 					"method": "remove",
 					"damage_type": "poison",
 					"chance_of_special": "1"
@@ -69,10 +71,11 @@
 			]
 		},
 		{
-			"name": "moves_debug",
+			"name": "Commander",
 			"description": "TEST TEST TEST",
 			"sprite": "specify a sprite to use here I guess",
-			"health": "99",
+			"health": "20",
+			"start_armor": "0",
 			"type": "Normal",
 			"moves": [
 				{
@@ -80,7 +83,7 @@
 					"description": "Description 1",
 					"weight": 1,
 					"type": "attack",
-					"power": "2",
+					"power": "4",
 					"method": "remove",
 					"damage_type": "normal",
 					"chance_of_special": "0"
@@ -90,7 +93,7 @@
 					"description": "Description 2",
 					"weight": 2,
 					"type": "attack",
-					"power": "4",
+					"power": "2",
 					"method": "remove",
 					"damage_type": "normal",
 					"chance_of_special": "0"
@@ -100,7 +103,7 @@
 					"description": "Description 3",
 					"weight": 3,
 					"type": "defend",
-					"power": "2",
+					"power": "3",
 					"method": "remove",
 					"damage_type": "normal",
 					"chance_of_special": "0"
@@ -116,7 +119,7 @@
 					"name": "Knight"
 				},
 				{
-					"name": "Rouge"
+					"name": "Rogue"
 				}
 			]
 		},
@@ -124,10 +127,24 @@
 			"name": "Basic2",
 			"group": [
 				{
-					"name": "Rouge"
+					"name": "Rogue"
 				},
 				{
 					"name": "Knight"
+				},
+				{
+					"name": "Knight"
+				}
+			]
+		},
+		{
+			"name": "Basic3",
+			"group": [
+				{
+					"name": "Rogue"
+				},
+				{
+					"name": "Rogue"
 				},
 				{
 					"name": "Knight"
@@ -138,7 +155,21 @@
 			"name": "Debug1",
 			"group": [
 				{
-					"name": "moves_debug"
+					"name": "Commander"
+				},
+				{
+					"name": "Commander"
+				}
+			]
+		},
+		{
+			"name": "Basic4",
+			"group": [
+				{
+					"name": "Knight"
+				},
+				{
+					"name": "Knight"
 				}
 			]
 		}
